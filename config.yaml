@@ -1,0 +1,192 @@
+# EdgeDash configuration
+# Edit these values to match your profile and preferences.
+# All fields have defaults except this file itself — it must be present.
+
+target_role: "Data Analyst"
+target_city: "Bengaluru"
+target_seniority: "mid"   # junior | mid | senior | lead
+
+keywords:
+  - "SQL"
+  - "Python"
+  - "data pipeline"
+  - "dashboard"
+  - "ETL"
+  - "Power BI"
+  - "Tableau"
+  - "Excel"
+
+my_skills:
+  - "Python"
+  - "SQL"
+  - "pandas"
+  - "NumPy"
+  - "Tableau"
+  - "Excel"
+  - "data cleaning"
+
+experience_years: 3
+
+# Path to the SQLite database file (relative to repo root, or absolute)
+db_path: "edgedash.db"
+
+# Minimum fit score (0–100) for a listing to appear in the dashboard
+min_fit_score: 60
+
+# Enabled job-board sources (must match keys in the SOURCES registry)
+# Available: "arbeitnow", "remoteok", "jobicy", "hasjob"
+sources:
+  - "hasjob"
+  - "remoteok"
+  - "jobicy"
+  - "arbeitnow"
+
+# Set to true to skip network calls and use the 12-listing mock dataset instead
+use_mock_fetcher: false
+
+# ---------------------------------------------------------------------------
+# LLM settings (steering rules 15–21)
+# ---------------------------------------------------------------------------
+
+# Provider: "gemini" (requires GEMINI_API_KEY in .env)
+#           "ollama" (local, no key needed — install ollama and pull a model)
+llm_provider: "gemini"
+llm_model: "gemini-3.5-flash-lite"   # stable free-tier model
+
+# Rate limits — stay inside the free tier
+llm_requests_per_second: 4   # 1 request per 4 s → safe well under 15 RPM
+llm_requests_per_minute: 14  # hard cap one below the 15 RPM limit
+
+# Max listings scored in one cycle (steering rule 21 — cost/rate-limit guard)
+scoring_batch_size: 25
+
+# ---------------------------------------------------------------------------
+# Orchestration thresholds (steering rules 28-33)
+# ---------------------------------------------------------------------------
+
+# How many hours between fetch cycles. fetch is skipped if last fetch is
+# more recent than this value.
+fetch_interval_hours: 6
+
+# Hard caps passed to each sub-agent as explicit stop conditions (rule 29).
+fetch_max_pages: 5          # max pages retrieved per source per cycle
+fetch_max_listings: 200     # max total listings fetched per cycle
+score_max_seconds: 300      # scorer wall-clock budget (seconds)
+analyse_max_seconds: 120    # gap analyser wall-clock budget (seconds)
+
+# ---------------------------------------------------------------------------
+# Scoring weights (steering rules 16, 19) — must sum to 1.0
+# Tune these to shift what matters most for your search.
+# ---------------------------------------------------------------------------
+weight_skill_match: 0.45    # fraction of required skills you have (nice-to-have at 1/3)
+weight_seniority_fit: 0.25  # how well the listing's level matches your target_seniority
+weight_location_fit: 0.15   # remote / target city / unknown / elsewhere
+weight_recency: 0.15        # linear decay over 30 days; null posted_at -> 0.5
+
+# ---------------------------------------------------------------------------
+# Skill alias map (steering rule 23)
+# THIS MAP IS YOURS TO OWN AND EDIT.
+# Every entry you add here is a deliberate, human-approved merge decision.
+# Format:  "raw normalised form": "canonical form"
+# Keys are already lowercased and stripped — match what --audit shows you.
+# Adding entries is expected and encouraged as you see your own data.
+# ---------------------------------------------------------------------------
+skill_aliases:
+  # Kubernetes variants
+  "k8s": "kubernetes"
+  "kubernetes (eks)": "kubernetes"
+  "kubernetes (gke)": "kubernetes"
+  "kubernetes (aks)": "kubernetes"
+
+  # Node.js — intentionally NOT merged with javascript (different skill)
+  "node": "node.js"
+  "nodejs": "node.js"
+  "node js": "node.js"
+
+  # PostgreSQL variants
+  "postgresql": "postgres"
+  "psql": "postgres"
+
+  # Google Cloud variants
+  "gcp": "gcp"
+  "google cloud": "gcp"
+  "google cloud platform": "gcp"
+
+  # Machine learning
+  "ml": "machine learning"
+
+  # CI/CD variants
+  "ci cd": "ci/cd"
+  "cicd": "ci/cd"
+  "ci-cd": "ci/cd"
+
+  # Python ecosystem
+  "python3": "python"
+  "python 3": "python"
+
+  # Data / BI tools
+  "ms excel": "excel"
+  "microsoft excel": "excel"
+  "power bi": "power bi"
+  "powerbi": "power bi"
+  "ms power bi": "power bi"
+  "looker studio": "looker"
+  "google data studio": "looker"
+
+  # Cloud / infra common aliases
+  "amazon web services": "aws"
+  "microsoft azure": "azure"
+  "big query": "bigquery"
+
+  # Version control
+  "github": "git"
+  "gitlab": "git"
+
+  # SQL variants
+  "mysql": "sql"
+  "mssql": "sql"
+  "t-sql": "sql"
+  "pl/sql": "sql"
+
+  # Language requirements — not technical skill gaps.
+  # These appear in German job listings that slip through the location filter.
+  # Mapping to "language-requirement" groups them into one ignorable bucket.
+  "deutsch": "language-requirement"
+  "englisch": "language-requirement"
+  "deutschkenntnisse": "language-requirement"
+  "english": "language-requirement"
+  "german": "language-requirement"
+  "french": "language-requirement"
+  "français": "language-requirement"
+
+# ---------------------------------------------------------------------------
+# Verification thresholds (steering rules 34-39)
+# Each threshold has a comment naming the failure it is designed to catch.
+# ---------------------------------------------------------------------------
+
+# check_score_spread — catches score inflation / model collapse where all
+# listings are scored nearly identically, giving the user no signal.
+min_score_spread: 10       # max - min must exceed this; flat distribution = suspect
+min_score_stdev: 5         # standard deviation must exceed this; catches tight clustering
+
+# check_extraction_sanity — catches a broken extractor (all skills empty) or
+# a model that returned free-text prose instead of a skill list.
+max_empty_extraction_pct: 20   # % of listings allowed to have empty required_skills
+max_skills_per_listing: 100    # a list longer than this is almost certainly a parsing error
+
+# check_gap_sample_size — catches ranking a gap that was seen in only one
+# or two listings, which is noise rather than a real signal.
+min_gap_sample: 3          # top-ranked gap must come from at least this many listings
+
+# check_freshness — catches a stale fetch cycle where the source was
+# unreachable and old data silently passed through as if it were current.
+max_data_age_days: 7       # newest listing must be no older than this many days
+
+# ---------------------------------------------------------------------------
+# Ask endpoint abuse guards
+# ---------------------------------------------------------------------------
+
+# Global daily cap on natural-language questions from the dashboard.
+# Prevents a traffic spike from exhausting the free LLM tier.
+# When exceeded, the ask box is disabled but the rest of the dashboard works.
+daily_ask_cap: 200         # max questions per UTC day across all sessions
