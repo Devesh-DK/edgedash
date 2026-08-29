@@ -1229,9 +1229,16 @@ def main() -> None:
         last_passing = load_last_passing_cycle()
         all_cycles   = load_recent_cycles(limit=30)
     except Exception as e:
-        logger.error(f"Hostile startup intercepted: {e}", exc_info=True)
-        st.error("database not configured")
-        return
+        err_str = str(e).lower()
+        if "relation" in err_str and "does not exist" in err_str or "no such table" in err_str:
+            # Database connected but tables are missing (first run hasn't happened)
+            cfg = _load_config()
+            st.info(f"no cycles yet — first run is scheduled for {cfg.fetch_interval_hours} hours from initialization.")
+            return
+        else:
+            logger.error(f"Hostile startup intercepted: {e}", exc_info=True)
+            st.error("database not configured")
+            return
 
     if not all_cycles:
         st.info(f"no cycles yet — first run is scheduled for {cfg.fetch_interval_hours} hours from initialization.")
