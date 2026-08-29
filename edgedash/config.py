@@ -120,6 +120,17 @@ class Config:
     # Ask endpoint abuse guards
     daily_ask_cap: int = 200
 
+    def override_from_profile(self, profile: dict) -> None:
+        """Dynamically overwrite config with user profile from DB."""
+        if profile.get("target_job"):
+            self.target_role = profile["target_job"]
+        if profile.get("skills"):
+            self.my_skills = profile["skills"]
+        # The keywords can be overwritten or appended to based on suited_profiles
+        if profile.get("suited_profiles"):
+            self.keywords = profile["suited_profiles"]
+
+
 
 def load_config(path: str | Path | None = None) -> Config:
     """Read config.yaml and return a validated Config instance.

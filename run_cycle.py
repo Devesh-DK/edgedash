@@ -47,6 +47,7 @@ if hasattr(sys.stdout, "reconfigure"):
 
 from edgedash.config import load_config
 from edgedash.orchestrator import run_cycle
+import edgedash.storage as storage
 
 
 # ---------------------------------------------------------------------------
@@ -89,6 +90,12 @@ def _parse_args() -> argparse.Namespace:
 if __name__ == "__main__":
     args = _parse_args()
     cfg  = load_config()
+    
+    # Load user profile from DB to override static config
+    storage.init_db(cfg.db_path)
+    profile = storage.get_user_profile()
+    if profile:
+        cfg.override_from_profile(profile)
 
     run_cycle(
         cfg,

@@ -29,6 +29,9 @@ else:
     load_dotenv()
 
 import streamlit as st
+import PyPDF2
+from edgedash.llm import complete_json
+import os
 
 # Always load storage through its public API; never touch sqlite3 directly.
 import edgedash.storage as storage
@@ -1203,6 +1206,88 @@ def render_ask_panel(cfg) -> None:
 # Entry point
 # ---------------------------------------------------------------------------
 
+
+def check_admin_password(tab_name: str) -> bool:
+    admin_pw = os.environ.get("ADMIN_PASSWORD")
+    if not admin_pw:
+        st.error("ADMIN_PASSWORD secret is not configured. Please add it to your environment/secrets to unlock this tab.")
+        return False
+        
+    if st.session_state.get("admin_unlocked", False):
+        return True
+        
+    pwd = st.text_input(f"Enter Admin Password for {tab_name}", type="password", key=f"pwd_{tab_name}")
+    if pwd:
+        if pwd == admin_pw:
+            st.session_state["admin_unlocked"] = True
+            st.rerun()
+        else:
+            st.error("Incorrect password")
+    return False
+
+def render_profile_tab(cfg) -> None:
+    st.header("My Profile")
+    
+    # Load current profile
+    try:
+        profile = storage.get_user_profile()
+    except Exception as e:
+        st.error(f"Failed to load profile: {e}")
+        return
+        
+    if profile:
+        st.markdown("### Active Virtual Dashboard")
+        st.info(
+            f"**Name:** {profile['name']}  \n"
+            f"**Target Role:** {profile['target_job']}  \n"
+            f"**Skills:** {', '.join(profile['skills'])}  \n"
+            f"**Suited Search Profiles:** {', '.join(profile['suited_profiles'])}"
+        )
+        st.caption("Job searches automatically include these profiles + Internships/Remote/Hybrid/On-site modifiers.")
+        st.divider()
+        
+    st.markdown("### Upload Resume to Update Profile")
+    uploaded_file = st.file_uploader("Upload PDF Resume", type=["pdf"])
+    if uploaded_file is not None and st.button("Process Resume"):
+        with st.spinner("Extracting profile using Gemini..."):
+            try:
+                reader = PyPDF2.PdfReader(uploaded_file)
+                text = ""
+                for page in reader.pages:
+                    text += page.extract_text() + "\n"
+                    
+                prompt = (
+                    "You are an expert technical recruiter. Analyze the following resume text "
+                    "and extract the candidate's name, their key skills, the primary job title they are looking for, "
+                    "and 3-5 best suited job profiles they should apply for (e.g. 'Frontend Developer', 'Python Engineer').\n\n"
+                    f"RESUME TEXT:\n{text[:15000]}"
+                )
+                
+                schema = {
+                    "type": "object",
+                    "properties": {
+                        "name": {"type": "string"},
+                        "skills": {"type": "array", "items": {"type": "string"}},
+                        "target_job": {"type": "string"},
+                        "suited_profiles": {"type": "array", "items": {"type": "string"}}
+                    },
+                    "required": ["name", "skills", "target_job", "suited_profiles"]
+                }
+                
+                result = complete_json(prompt, schema, config=cfg)
+                storage.save_user_profile(
+                    name=result["name"],
+                    skills=result["skills"],
+                    target_job=result["target_job"],
+                    suited_profiles=result["suited_profiles"]
+                )
+                st.success("Profile updated successfully! Fetcher searches will now use this data.")
+                st.rerun()
+                
+            except Exception as e:
+                st.error(f"Failed to process resume: {e}")
+
+
 def main() -> None:
     st.set_page_config(
         page_title="EdgeDash — Agent Activity",
@@ -1295,47 +1380,53 @@ def main() -> None:
         st.info(f"no cycles yet — first run is scheduled for {cfg.fetch_interval_hours} hours from initialization.")
         return
 
-    # 1. Header strip — metric cards
-    try:
-        render_header(last_passing, all_cycles)
-    except Exception as e:
-        logger.error(f"render_header failed: {e}", exc_info=True)
-        st.error("Header panel is temporarily unavailable.")
+    tab_dash, tab_ask, tab_profile = st.tabs(["Dashboard", "Ask Your Data", "My Profile"])
 
-    st.divider()
-
-    # 2. Activity log (main panel -- most vertical space)
-    try:
-        render_activity_log(all_cycles)
-    except Exception as e:
-        logger.error(f"render_activity_log failed: {e}", exc_info=True)
-        st.error("Activity log panel is temporarily unavailable.")
-
-    st.divider()
-
-    # 3. Listings + gaps side by side
-    col_left, col_right = st.columns(2)
-    with col_left:
+    with tab_dash:
+        # 1. Header strip — metric cards
         try:
-            render_listings_panel()
+            render_header(last_passing, all_cycles)
         except Exception as e:
-            logger.error(f"render_listings_panel failed: {e}", exc_info=True)
-            st.error("Listings panel is temporarily unavailable.")
-    with col_right:
+            logger.error(f"render_header failed: {e}", exc_info=True)
+            st.error("Header panel is temporarily unavailable.")
+
+        st.divider()
+
+        # 2. Activity log (main panel -- most vertical space)
         try:
-            render_gaps_panel()
+            render_activity_log(all_cycles)
         except Exception as e:
-            logger.error(f"render_gaps_panel failed: {e}", exc_info=True)
-            st.error("Gaps panel is temporarily unavailable.")
+            logger.error(f"render_activity_log failed: {e}", exc_info=True)
+            st.error("Activity log panel is temporarily unavailable.")
 
-    st.divider()
+        st.divider()
 
-    # 4. Ask your data
-    try:
-        render_ask_panel(_load_config())
-    except Exception as e:
-        logger.error(f"render_ask_panel failed: {e}", exc_info=True)
-        st.error("Ask panel is temporarily unavailable.")
+        # 3. Listings + gaps side by side
+        col_left, col_right = st.columns(2)
+        with col_left:
+            try:
+                render_listings_panel()
+            except Exception as e:
+                logger.error(f"render_listings_panel failed: {e}", exc_info=True)
+                st.error("Listings panel is temporarily unavailable.")
+        with col_right:
+            try:
+                render_gaps_panel()
+            except Exception as e:
+                logger.error(f"render_gaps_panel failed: {e}", exc_info=True)
+                st.error("Gaps panel is temporarily unavailable.")
+
+    with tab_ask:
+        if check_admin_password("Ask Your Data"):
+            try:
+                render_ask_panel(_load_config())
+            except Exception as e:
+                logger.error(f"render_ask_panel failed: {e}", exc_info=True)
+                st.error("Ask panel is temporarily unavailable.")
+
+    with tab_profile:
+        if check_admin_password("My Profile"):
+            render_profile_tab(cfg)
 
     # Footer
     last_cycle_str = fmt_ts(last_passing["started_at"]) if last_passing else "never"

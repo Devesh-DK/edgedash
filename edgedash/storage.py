@@ -204,6 +204,15 @@ _DDL = [
         low_confidence   INTEGER NOT NULL DEFAULT 0
     )
     """,
+    """
+    CREATE TABLE IF NOT EXISTS user_profile (
+        id              INTEGER PRIMARY KEY,
+        name            TEXT,
+        skills          TEXT,
+        target_job      TEXT,
+        suited_profiles TEXT
+    )
+    """,
 ]
 
 
@@ -253,6 +262,34 @@ def init_db(path: str) -> Any:
         _apply_migrations(cur)
 
     return _connection
+
+
+def get_user_profile() -> dict | None:
+    """Return the user profile from the database, or None if not set."""
+    with _cursor() as cur:
+        cur.execute("SELECT name, skills, target_job, suited_profiles FROM user_profile WHERE id = 1")
+        row = cur.fetchone()
+        if not row:
+            return None
+        return {
+            "name": row["name"],
+            "skills": json.loads(row["skills"]) if row["skills"] else [],
+            "target_job": row["target_job"],
+            "suited_profiles": json.loads(row["suited_profiles"]) if row["suited_profiles"] else []
+        }
+
+
+def save_user_profile(name: str, skills: list, target_job: str, suited_profiles: list) -> None:
+    """Save the extracted profile to the database."""
+    with _cursor() as cur:
+        cur.execute("DELETE FROM user_profile WHERE id = 1")
+        cur.execute(
+            """
+            INSERT INTO user_profile (id, name, skills, target_job, suited_profiles)
+            VALUES (1, ?, ?, ?, ?)
+            """,
+            (name, json.dumps(skills), target_job, json.dumps(suited_profiles))
+        )
 
 
 def stable_id(source: str, url: str) -> str:
