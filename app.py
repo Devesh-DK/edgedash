@@ -1224,6 +1224,57 @@ def main() -> None:
         unsafe_allow_html=True,
     )
 
+    # Health status line
+    try:
+        health_color = "gray"
+        health_text = "Status: Unknown"
+        
+        last_pass = load_last_passing_cycle()
+        all_recent = load_recent_cycles(limit=20)
+        orch_runs = [r for r in all_recent if r["agent"] == "orchestrator"][:3]
+        
+        now = datetime.now(timezone.utc)
+        
+        # Check if last 3 failed
+        all_failed = False
+        if len(orch_runs) == 3:
+            all_failed = True
+            for r in orch_runs:
+                notes = parse_notes(r.get("notes"))
+                verdict = notes.get("verdict", "unknown")
+                if verdict == "pass" or (verdict == "unknown" and notes.get("outcome") == "complete"):
+                    all_failed = False
+                    break
+                    
+        if all_failed:
+            health_color = "var(--accent-rose)" # red
+            health_text = "System Status: CRITICAL (Last 3 cycles failed)"
+        elif last_pass:
+            last_pass_dt = datetime.fromisoformat(last_pass["started_at"])
+            if last_pass_dt.tzinfo is None:
+                last_pass_dt = last_pass_dt.replace(tzinfo=timezone.utc)
+            
+            hours_ago = (now - last_pass_dt).total_seconds() / 3600
+            if hours_ago <= 24:
+                health_color = "var(--accent-green)" # green
+                health_text = "System Status: HEALTHY (Live data)"
+            else:
+                health_color = "var(--accent-amber)" # amber
+                health_text = f"System Status: STALE (Last update {hours_ago:.1f}h ago)"
+        else:
+            health_color = "var(--accent-amber)" # amber
+            health_text = "System Status: WAITING (No successful cycles yet)"
+            
+        st.markdown(
+            f'<div style="color:{health_color}; font-size:0.82rem; font-weight:600; margin-bottom:20px; letter-spacing: 0.02em;">'
+            f'● {health_text}'
+            f'</div>',
+            unsafe_allow_html=True
+        )
+    except Exception as e:
+        # Rule 50: Health check failure must not take down the page
+        pass
+
     try:
         cfg = _load_config()
         last_passing = load_last_passing_cycle()

@@ -35,6 +35,12 @@ jobs:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         run: python run_cycle.py | tee cycle.log
         
+      - name: Run health check
+        if: always()
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+        run: python -m edgedash.health
+        
       - name: Upload cycle log
         if: always()
         uses: actions/upload-artifact@v4
