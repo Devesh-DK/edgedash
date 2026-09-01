@@ -407,7 +407,7 @@ def _call_with_backoff(
             msg = str(exc).lower()
             is_quota = ("quota" in msg or "429" in msg or
                         "resource_exhausted" in msg or "too_many_requests" in msg)
-            is_transient_net = any(k in msg for k in ("disconnected", "timeout", "timed out", "connection", "remoteprotocolerror"))
+            is_transient_net = any(k in msg for k in ("disconnected", "timeout", "timed out", "connection", "remoteprotocolerror", "500", "502", "503", "504", "unavailable", "server error", "internal server"))
             if (is_quota or is_transient_net) and attempt < max_attempts - 1:
                 # Respect the server-supplied delay; fall back to exponential.
                 api_delay = _parse_retry_delay(exc)

@@ -92,10 +92,13 @@ if __name__ == "__main__":
     cfg  = load_config()
     
     # Load user profile from DB to override static config
-    storage.init_db(cfg.db_path)
-    profile = storage.get_user_profile()
-    if profile:
-        cfg.override_from_profile(profile)
+    try:
+        storage.init_db(cfg.db_path)
+        profile = storage.get_user_profile()
+        if profile:
+            cfg.override_from_profile(profile)
+    except Exception as exc:
+        print(f"  ⚠  Could not load profile from DB ({exc}) — proceeding with static config")
 
     run_cycle(
         cfg,

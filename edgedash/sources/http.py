@@ -81,7 +81,7 @@ def get_json(
             )
             response.raise_for_status()
             return response.json()
-        except requests.RequestException as exc:
+        except (requests.RequestException, ValueError) as exc:
             last_error = exc
             if attempt < retries:
                 wait = _BACKOFF_BASE * (2 ** attempt)
@@ -120,7 +120,7 @@ def get_text(
             )
             response.raise_for_status()
             return response.text
-        except requests.RequestException as exc:
+        except (requests.RequestException, ValueError) as exc:
             last_error = exc
             if attempt < retries:
                 wait = _BACKOFF_BASE * (2 ** attempt)
@@ -179,7 +179,7 @@ def post_json(
             )
             response.raise_for_status()
             return response.json()
-        except requests.RequestException as exc:
+        except (requests.RequestException, ValueError) as exc:
             last_error = exc
             if attempt < retries:
                 wait = _BACKOFF_BASE * (2 ** attempt)

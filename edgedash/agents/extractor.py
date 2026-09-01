@@ -58,7 +58,7 @@ EXTRACTION_SCHEMA: dict[str, Any] = {
         },
         "seniority": {
             "type": "string",
-            "enum": ["junior", "mid", "senior", "lead", "unknown"],
+            "enum": ["junior", "mid", "senior", "lead", "manager", "unknown"],
             "description": "Seniority level stated by the listing.",
         },
         "years_required": {
@@ -108,7 +108,7 @@ required_skills  — skills the listing explicitly requires (e.g. "must have", \
 "required", "you will need"). Empty list if none are stated.
 nice_to_have     — skills the listing describes as preferred, a bonus, or \
 "nice to have" but not required. Empty list if none are stated.
-seniority        — one of: junior, mid, senior, lead, unknown. \
+seniority        — one of: junior, mid, senior, lead, manager, unknown. \
 Use "unknown" if the listing gives no clear signal.
 years_required   — the minimum years of experience the listing states, \
 as an integer. null if not stated. Never derive this from seniority.

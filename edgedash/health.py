@@ -39,19 +39,20 @@ def main() -> None:
         print(f"Database connection: FAIL ({e})")
         sys.exit(1) # Cannot proceed without DB
         
-    # Check 2: Newest listing older than 3 days
+    # Check 2: Newest listing older than max_data_age_days
     try:
         last_fetch = storage.last_fetch_time()
         if not last_fetch:
             print("Listing freshness: FAIL (No listings found)")
             is_healthy = False
         else:
-            last_fetch_dt = datetime.fromisoformat(last_fetch)
+            last_fetch_dt = datetime.fromisoformat(last_fetch.replace("Z", "+00:00"))
             if last_fetch_dt.tzinfo is None:
                 last_fetch_dt = last_fetch_dt.replace(tzinfo=timezone.utc)
             days_old = (now - last_fetch_dt).days
-            if days_old > 3:
-                print(f"Listing freshness: FAIL (Newest listing is {days_old} days old)")
+            max_age = getattr(cfg, "max_data_age_days", 7)
+            if days_old > max_age:
+                print(f"Listing freshness: FAIL (Newest listing is {days_old} days old, threshold is {max_age} days)")
                 is_healthy = False
             else:
                 print(f"Listing freshness: OK ({days_old} days old)")
@@ -66,7 +67,7 @@ def main() -> None:
             print("Last successful cycle: FAIL (No passing cycles found)")
             is_healthy = False
         else:
-            last_pass_dt = datetime.fromisoformat(last_pass["started_at"])
+            last_pass_dt = datetime.fromisoformat(str(last_pass["started_at"]).replace("Z", "+00:00"))
             if last_pass_dt.tzinfo is None:
                 last_pass_dt = last_pass_dt.replace(tzinfo=timezone.utc)
             hours_ago = (now - last_pass_dt).total_seconds() / 3600
@@ -86,7 +87,7 @@ def main() -> None:
         if len(orch_runs) == 3:
             all_failed = True
             for r in orch_runs:
-                notes = storage.parse_notes(r.get("notes")) if hasattr(storage, "parse_notes") else {}
+                notes = storage.parse_notes(r.get("notes"))
                 verdict = notes.get("verdict", "unknown")
                 if verdict == "pass" or (verdict == "unknown" and notes.get("outcome") == "complete"):
                     all_failed = False

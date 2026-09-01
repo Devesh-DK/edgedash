@@ -45,7 +45,7 @@ logger = logging.getLogger(__name__)
 
 _W = 62  # console width
 
-Outcome = Literal["complete", "partial", "nothing_to_do", "dry_run"]
+Outcome = Literal["complete", "partial", "nothing_to_do", "dry_run", "degraded"]
 
 
 # ---------------------------------------------------------------------------

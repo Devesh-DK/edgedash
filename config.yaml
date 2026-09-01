@@ -58,7 +58,7 @@ llm_requests_per_second: 4   # 1 request per 4 s → safe well under 15 RPM
 llm_requests_per_minute: 14  # hard cap one below the 15 RPM limit
 
 # Max listings scored in one cycle (steering rule 21 — cost/rate-limit guard)
-scoring_batch_size: 25
+scoring_batch_size: 50
 
 # ---------------------------------------------------------------------------
 # Orchestration thresholds (steering rules 28-33)
@@ -176,7 +176,7 @@ max_skills_per_listing: 100    # a list longer than this is almost certainly a p
 
 # check_gap_sample_size — catches ranking a gap that was seen in only one
 # or two listings, which is noise rather than a real signal.
-min_gap_sample: 3          # top-ranked gap must come from at least this many listings
+min_gap_sample: 2          # top-ranked gap must come from at least this many listings
 
 # check_freshness — catches a stale fetch cycle where the source was
 # unreachable and old data silently passed through as if it were current.

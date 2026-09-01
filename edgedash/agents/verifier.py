@@ -146,7 +146,7 @@ def _load_inputs() -> tuple[
     latest_fetch_at: datetime | None = None
     if raw_ts:
         try:
-            latest_fetch_at = datetime.fromisoformat(raw_ts)
+            latest_fetch_at = datetime.fromisoformat(raw_ts.replace("Z", "+00:00"))
             # Ensure timezone-aware for arithmetic in check_freshness
             if latest_fetch_at.tzinfo is None:
                 latest_fetch_at = latest_fetch_at.replace(tzinfo=timezone.utc)

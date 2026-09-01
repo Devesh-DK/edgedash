@@ -29,7 +29,7 @@ from edgedash.config import Config
 # ---------------------------------------------------------------------------
 
 # Ordered band list — index difference gives "distance" for seniority_fit.
-_SENIORITY_BANDS: list[str] = ["junior", "mid", "senior", "lead"]
+_SENIORITY_BANDS: list[str] = ["junior", "mid", "senior", "lead", "manager"]
 
 # Seniority fit score by band distance.
 _SENIORITY_BY_DISTANCE: dict[int, float] = {0: 1.0, 1: 0.6, 2: 0.25}

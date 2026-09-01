@@ -60,6 +60,19 @@ _is_pg: bool = False
 _db_path: str | None = None
 
 
+def parse_notes(raw: Any) -> dict:
+    """Safely parse a notes field that may be a JSON str or already a dict."""
+    if isinstance(raw, dict):
+        return raw
+    if not raw:
+        return {}
+    try:
+        return json.loads(raw)
+    except (json.JSONDecodeError, TypeError):
+        return {}
+
+
+
 def _get_connection() -> Any:
     if _connection is None:
         raise RuntimeError(
@@ -249,12 +262,16 @@ def init_db(path: str) -> Any:
             raise RuntimeError("DATABASE_URL is set but psycopg2 is not installed.")
         print("Using PostgreSQL backend")
         _is_pg = True
-        _connection = psycopg2.connect(db_url)
+        if _connection is None or getattr(_connection, "closed", 0) != 0:
+            _connection = psycopg2.connect(db_url)
     else:
         print("Using SQLite backend")
         _is_pg = False
-        _connection = sqlite3.connect(path, check_same_thread=False)
-        _connection.row_factory = sqlite3.Row
+        if _connection is None or path == ":memory:" or _db_path != path:
+            _connection = sqlite3.connect(path, check_same_thread=False)
+            _connection.row_factory = sqlite3.Row
+
+    _db_path = path
 
     with _cursor() as cur:
         for statement in _DDL:
@@ -266,17 +283,35 @@ def init_db(path: str) -> Any:
 
 def get_user_profile() -> dict | None:
     """Return the user profile from the database, or None if not set."""
-    with _cursor() as cur:
-        cur.execute("SELECT name, skills, target_job, suited_profiles FROM user_profile WHERE id = 1")
-        row = cur.fetchone()
-        if not row:
-            return None
-        return {
-            "name": row["name"],
-            "skills": json.loads(row["skills"]) if row["skills"] else [],
-            "target_job": row["target_job"],
-            "suited_profiles": json.loads(row["suited_profiles"]) if row["suited_profiles"] else []
-        }
+    try:
+        with _cursor() as cur:
+            cur.execute("SELECT name, skills, target_job, suited_profiles FROM user_profile WHERE id = 1")
+            row = cur.fetchone()
+            if not row:
+                return None
+            
+            skills = []
+            if row["skills"]:
+                try:
+                    skills = json.loads(row["skills"]) if isinstance(row["skills"], str) else list(row["skills"])
+                except Exception:
+                    skills = [s.strip() for s in str(row["skills"]).split(",") if s.strip()]
+
+            suited_profiles = []
+            if row["suited_profiles"]:
+                try:
+                    suited_profiles = json.loads(row["suited_profiles"]) if isinstance(row["suited_profiles"], str) else list(row["suited_profiles"])
+                except Exception:
+                    suited_profiles = []
+
+            return {
+                "name": row["name"] or "",
+                "skills": skills,
+                "target_job": row["target_job"] or "",
+                "suited_profiles": suited_profiles
+            }
+    except Exception:
+        return None
 
 
 def save_user_profile(name: str, skills: list, target_job: str, suited_profiles: list) -> None:
