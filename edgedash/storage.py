@@ -234,6 +234,19 @@ def _apply_migrations(cur: Any) -> None:
     if _is_pg:
         cur.execute("SELECT column_name FROM information_schema.columns WHERE table_name = 'listings'")
         existing_cols = {row[0] for row in cur.fetchall()}
+        
+        # Ensure Row-Level Security (RLS) is enabled on all tables in public schema
+        tables = [
+            "query_log",
+            "listings",
+            "skill_gaps",
+            "cycle_log",
+            "extraction_cache",
+            "gap_snapshots",
+            "user_profile",
+        ]
+        for t in tables:
+            cur.execute(f"ALTER TABLE {t} ENABLE ROW LEVEL SECURITY;")
     else:
         cur.execute("PRAGMA table_info(listings)")
         existing_cols = {row[1] for row in cur.fetchall()}
