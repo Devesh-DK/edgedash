@@ -126,9 +126,30 @@ class Config:
             self.target_role = profile["target_job"]
         if profile.get("skills"):
             self.my_skills = profile["skills"]
-        # The keywords can be overwritten or appended to based on suited_profiles
+
+        keywords_set = set()
+        if profile.get("target_job"):
+            keywords_set.add(profile["target_job"])
+            cleaned_target = " ".join(profile["target_job"].replace("&", " ").split())
+            if cleaned_target:
+                keywords_set.add(cleaned_target)
+
         if profile.get("suited_profiles"):
-            self.keywords = profile["suited_profiles"]
+            for sp in profile["suited_profiles"]:
+                keywords_set.add(sp)
+                for suffix in ["Associate", "Analyst", "Specialist", "Manager", "Lead", "Officer", "Coordinator"]:
+                    if sp.endswith(suffix):
+                        core = sp[:-len(suffix)].strip()
+                        if len(core) > 2:
+                            keywords_set.add(core)
+
+        if profile.get("skills"):
+            for sk in profile["skills"]:
+                if len(sk) >= 3 and any(ch.isalnum() for ch in sk):
+                    keywords_set.add(sk)
+
+        if keywords_set:
+            self.keywords = sorted(keywords_set, key=len, reverse=True)
 
 
 
