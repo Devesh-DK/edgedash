@@ -40,7 +40,9 @@ jobs:
 
       - name: Build APK (Assemble Release)
         working-directory: ./edgedash_mobile/android
-        run: ./gradlew assembleRelease
+        run: |
+          chmod +x gradlew
+          ./gradlew assembleRelease
 
       - name: Upload APK to GitHub Artifacts
         uses: actions/upload-artifact@v3
