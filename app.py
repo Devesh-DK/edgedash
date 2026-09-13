@@ -53,38 +53,39 @@ TTL_SECONDS = 10  # cache TTL -- refresh every 10s without hammering SQLite
 
 _PREMIUM_CSS = """
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Inter:wght@400;500;600&display=swap');
 
 /* ── Root variables ──────────────────────────────────────────────────────── */
 :root {
-    --bg-primary: #0a0e1a;
-    --bg-card: rgba(15, 20, 40, 0.65);
-    --bg-card-hover: rgba(20, 28, 55, 0.8);
-    --glass-border: rgba(255, 255, 255, 0.06);
-    --glass-border-hover: rgba(255, 255, 255, 0.12);
-    --text-primary: #e8eaf6;
-    --text-secondary: #8892b0;
-    --text-muted: #5a6380;
-    --accent-blue: #60a5fa;
-    --accent-purple: #a78bfa;
-    --accent-cyan: #22d3ee;
-    --accent-green: #34d399;
-    --accent-amber: #fbbf24;
-    --accent-rose: #fb7185;
-    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    --gradient-success: linear-gradient(135deg, #34d399 0%, #059669 100%);
-    --gradient-warning: linear-gradient(135deg, #fbbf24 0%, #f59e0b 100%);
-    --gradient-danger: linear-gradient(135deg, #fb7185 0%, #e11d48 100%);
-    --gradient-info: linear-gradient(135deg, #22d3ee 0%, #0891b2 100%);
-    --shadow-card: 0 4px 24px rgba(0, 0, 0, 0.3), 0 1px 4px rgba(0, 0, 0, 0.2);
-    --shadow-glow-blue: 0 0 20px rgba(96, 165, 250, 0.15);
-    --shadow-glow-purple: 0 0 20px rgba(167, 139, 250, 0.15);
+    --bg-primary: #f8f9fa;
+    --bg-card: #ffffff;
+    --bg-card-hover: #ffffff;
+    --glass-border: #e2e8f0;
+    --glass-border-hover: #cbd5e1;
+    --text-primary: #1e293b;
+    --text-secondary: #475569;
+    --text-muted: #94a3b8;
+    --accent-blue: #1a73e8;
+    --accent-purple: #9333ea;
+    --accent-cyan: #06b6d4;
+    --accent-green: #10b981;
+    --accent-amber: #f59e0b;
+    --accent-rose: #f43f5e;
+    --gradient-primary: linear-gradient(135deg, #1a73e8 0%, #9333ea 100%);
+    --gradient-success: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    --gradient-warning: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    --gradient-danger: linear-gradient(135deg, #f43f5e 0%, #e11d48 100%);
+    --gradient-info: linear-gradient(135deg, #06b6d4 0%, #0891b2 100%);
+    --shadow-card: 0 1px 3px rgba(0,0,0,0.05), 0 4px 12px rgba(0,0,0,0.03);
+    --shadow-glow-blue: 0 4px 20px rgba(26, 115, 232, 0.12);
+    --shadow-glow-purple: 0 4px 20px rgba(147, 51, 234, 0.12);
 }
 
 /* ── Global resets ───────────────────────────────────────────────────────── */
 .stApp {
     background: var(--bg-primary) !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif !important;
+    color: var(--text-primary) !important;
 }
 
 .stApp > header { background: transparent !important; }
@@ -96,26 +97,26 @@ _PREMIUM_CSS = """
 ::-webkit-scrollbar { width: 6px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-thumb {
-    background: rgba(255,255,255,0.1);
+    background: rgba(0,0,0,0.15);
     border-radius: 3px;
 }
-::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+::-webkit-scrollbar-thumb:hover { background: rgba(0,0,0,0.25); }
 
 /* ── Typography ──────────────────────────────────────────────────────────── */
 h1, h2, h3, h4, h5, h6 {
-    font-family: 'Inter', sans-serif !important;
+    font-family: 'Google Sans', 'Inter', sans-serif !important;
     color: var(--text-primary) !important;
+    letter-spacing: -0.01em;
 }
 
 p, span, label, .stMarkdown {
     font-family: 'Inter', sans-serif !important;
+    color: var(--text-secondary);
 }
 
 /* ── Glass card base ─────────────────────────────────────────────────────── */
 .glass-card {
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 24px;
@@ -124,7 +125,6 @@ p, span, label, .stMarkdown {
 }
 
 .glass-card:hover {
-    background: var(--bg-card-hover);
     border-color: var(--glass-border-hover);
     transform: translateY(-2px);
     box-shadow: var(--shadow-card), var(--shadow-glow-blue);
@@ -133,7 +133,6 @@ p, span, label, .stMarkdown {
 /* ── Metric cards ────────────────────────────────────────────────────────── */
 .metric-card {
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 20px 24px;
@@ -149,7 +148,7 @@ p, span, label, .stMarkdown {
     top: 0;
     left: 0;
     right: 0;
-    height: 3px;
+    height: 4px;
     border-radius: 16px 16px 0 0;
     opacity: 0;
     transition: opacity 0.35s ease;
@@ -158,6 +157,7 @@ p, span, label, .stMarkdown {
 .metric-card:hover {
     border-color: var(--glass-border-hover);
     transform: translateY(-3px);
+    box-shadow: 0 10px 25px rgba(0,0,0,0.05);
 }
 
 .metric-card:hover::before { opacity: 1; }
@@ -178,25 +178,26 @@ p, span, label, .stMarkdown {
     margin-bottom: 12px;
 }
 
-.metric-card .metric-icon.blue  { background: rgba(96, 165, 250, 0.12); color: var(--accent-blue); }
-.metric-card .metric-icon.green { background: rgba(52, 211, 153, 0.12); color: var(--accent-green); }
-.metric-card .metric-icon.amber { background: rgba(251, 191, 36, 0.12); color: var(--accent-amber); }
-.metric-card .metric-icon.cyan  { background: rgba(34, 211, 238, 0.12); color: var(--accent-cyan); }
+.metric-card .metric-icon.blue  { background: rgba(26, 115, 232, 0.1); color: var(--accent-blue); }
+.metric-card .metric-icon.green { background: rgba(16, 185, 129, 0.1); color: var(--accent-green); }
+.metric-card .metric-icon.amber { background: rgba(245, 158, 11, 0.1); color: var(--accent-amber); }
+.metric-card .metric-icon.cyan  { background: rgba(6, 182, 212, 0.1); color: var(--accent-cyan); }
 
 .metric-card .metric-label {
     font-size: 0.75rem;
-    font-weight: 500;
-    color: var(--text-secondary);
+    font-weight: 600;
+    color: var(--text-muted);
     text-transform: uppercase;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.05em;
     margin-bottom: 4px;
 }
 
 .metric-card .metric-value {
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     font-weight: 700;
     color: var(--text-primary);
     line-height: 1.2;
+    font-family: 'Google Sans', sans-serif;
 }
 
 /* ── Section headers ─────────────────────────────────────────────────────── */
@@ -206,7 +207,7 @@ p, span, label, .stMarkdown {
     gap: 12px;
     margin-bottom: 20px;
     padding-bottom: 12px;
-    border-bottom: 1px solid rgba(255,255,255,0.06);
+    border-bottom: 1px solid var(--glass-border);
 }
 
 .section-header .section-icon {
@@ -217,6 +218,7 @@ p, span, label, .stMarkdown {
     align-items: center;
     justify-content: center;
     font-size: 16px;
+    background: #f1f5f9;
 }
 
 .section-header .section-title {
@@ -228,7 +230,7 @@ p, span, label, .stMarkdown {
 
 .section-header .section-subtitle {
     font-size: 0.78rem;
-    color: var(--text-secondary);
+    color: var(--text-muted);
     margin: 0;
 }
 
@@ -247,8 +249,8 @@ p, span, label, .stMarkdown {
 }
 
 .activity-row:hover {
-    background: var(--bg-card-hover);
     border-color: var(--glass-border-hover);
+    box-shadow: 0 2px 8px rgba(0,0,0,0.03);
 }
 
 .status-badge {
@@ -280,10 +282,10 @@ p, span, label, .stMarkdown {
 
 .activity-detail {
     font-size: 0.82rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
 }
 
-.activity-detail b { color: var(--text-secondary); }
+.activity-detail b { color: var(--text-primary); font-weight: 600; }
 
 .activity-elapsed {
     font-size: 0.78rem;
@@ -313,9 +315,9 @@ p, span, label, .stMarkdown {
 }
 
 .listing-card:hover {
-    background: var(--bg-card-hover);
     border-color: var(--glass-border-hover);
     transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .score-ring {
@@ -364,16 +366,16 @@ p, span, label, .stMarkdown {
 }
 
 .gap-card:hover {
-    background: var(--bg-card-hover);
     border-color: var(--glass-border-hover);
     transform: translateX(4px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 
 .gap-rank {
     width: 32px;
     height: 32px;
     border-radius: 8px;
-    background: rgba(167, 139, 250, 0.12);
+    background: rgba(147, 51, 234, 0.1);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -401,11 +403,12 @@ p, span, label, .stMarkdown {
 }
 
 .gap-stat-pill {
-    background: rgba(255,255,255,0.04);
+    background: #f1f5f9;
     padding: 2px 8px;
     border-radius: 6px;
     font-size: 0.72rem;
     color: var(--text-secondary);
+    font-weight: 500;
 }
 
 .gap-low-conf {
@@ -417,7 +420,6 @@ p, span, label, .stMarkdown {
 /* ── Ask panel ───────────────────────────────────────────────────────────── */
 .ask-container {
     background: var(--bg-card);
-    backdrop-filter: blur(16px);
     border: 1px solid var(--glass-border);
     border-radius: 16px;
     padding: 28px;
@@ -426,27 +428,27 @@ p, span, label, .stMarkdown {
 
 .example-chip {
     display: inline-block;
-    background: rgba(96, 165, 250, 0.08);
-    border: 1px solid rgba(96, 165, 250, 0.2);
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
     border-radius: 20px;
     padding: 6px 16px;
     font-size: 0.8rem;
-    color: var(--accent-blue);
+    color: var(--text-secondary);
     cursor: pointer;
     transition: all 0.2s ease;
     margin: 4px 4px 4px 0;
 }
 
 .example-chip:hover {
-    background: rgba(96, 165, 250, 0.15);
-    border-color: rgba(96, 165, 250, 0.4);
+    background: #e2e8f0;
+    color: var(--text-primary);
     transform: translateY(-1px);
 }
 
 /* ── Answer display ──────────────────────────────────────────────────────── */
 .answer-box {
-    background: rgba(96, 165, 250, 0.04);
-    border: 1px solid rgba(96, 165, 250, 0.12);
+    background: #f8fafc;
+    border: 1px solid var(--glass-border);
     border-radius: 12px;
     padding: 18px 20px;
     margin-top: 16px;
@@ -463,14 +465,15 @@ p, span, label, .stMarkdown {
     color: var(--text-muted);
     margin-top: 10px;
     padding-top: 10px;
-    border-top: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid var(--glass-border);
 }
 
 .answer-provenance code {
-    background: rgba(255,255,255,0.06);
-    padding: 1px 6px;
+    background: #e2e8f0;
+    padding: 2px 6px;
     border-radius: 4px;
     font-size: 0.72rem;
+    color: var(--text-secondary);
 }
 
 /* ── Legend strip ────────────────────────────────────────────────────────── */
@@ -499,17 +502,18 @@ p, span, label, .stMarkdown {
 .dash-title {
     font-size: 1.8rem;
     font-weight: 800;
-    background: linear-gradient(135deg, #e8eaf6, #a78bfa, #60a5fa);
+    background: var(--gradient-primary);
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     background-clip: text;
     margin-bottom: 2px;
     letter-spacing: -0.02em;
+    font-family: 'Google Sans', sans-serif;
 }
 
 .dash-subtitle {
     font-size: 0.82rem;
-    color: var(--text-muted);
+    color: var(--text-secondary);
     display: flex;
     align-items: center;
     gap: 8px;
@@ -531,22 +535,22 @@ p, span, label, .stMarkdown {
 
 /* ── Staleness warnings ──────────────────────────────────────────────────── */
 .stale-warn {
-    background: rgba(251, 191, 36, 0.06);
-    border: 1px solid rgba(251, 191, 36, 0.2);
+    background: #fffbeb;
+    border: 1px solid #fde68a;
     border-radius: 12px;
     padding: 14px 18px;
     font-size: 0.85rem;
-    color: var(--accent-amber);
+    color: #d97706;
     margin: 12px 0;
 }
 
 .stale-err {
-    background: rgba(251, 113, 133, 0.06);
-    border: 1px solid rgba(251, 113, 133, 0.2);
+    background: #fff1f2;
+    border: 1px solid #fecdd3;
     border-radius: 12px;
     padding: 14px 18px;
     font-size: 0.85rem;
-    color: var(--accent-rose);
+    color: #e11d48;
     margin: 12px 0;
 }
 
@@ -556,7 +560,7 @@ p, span, label, .stMarkdown {
     color: var(--text-muted);
     font-size: 0.74rem;
     padding: 24px 0 12px;
-    border-top: 1px solid rgba(255,255,255,0.04);
+    border-top: 1px solid var(--glass-border);
     margin-top: 32px;
 }
 
@@ -570,25 +574,26 @@ div[data-testid="stHorizontalBlock"] {
 /* Clean dividers */
 hr {
     border: none !important;
-    border-top: 1px solid rgba(255,255,255,0.04) !important;
+    border-top: 1px solid var(--glass-border) !important;
     margin: 28px 0 !important;
 }
 
 /* Text input styling */
 .stTextInput > div > div > input {
-    background: rgba(15, 20, 40, 0.8) !important;
-    border: 1px solid rgba(255,255,255,0.08) !important;
+    background: #fff !important;
+    border: 1px solid var(--glass-border) !important;
     border-radius: 12px !important;
     color: var(--text-primary) !important;
     font-family: 'Inter', sans-serif !important;
     padding: 12px 16px !important;
     font-size: 0.9rem !important;
     transition: border-color 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.02) !important;
 }
 
 .stTextInput > div > div > input:focus {
-    border-color: rgba(96, 165, 250, 0.4) !important;
-    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.1) !important;
+    border-color: var(--accent-blue) !important;
+    box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.15) !important;
 }
 
 .stTextInput > div > div > input::placeholder {
@@ -597,21 +602,23 @@ hr {
 
 /* Button styling */
 .stButton > button {
-    background: rgba(96, 165, 250, 0.08) !important;
-    border: 1px solid rgba(96, 165, 250, 0.2) !important;
+    background: #fff !important;
+    border: 1px solid var(--glass-border) !important;
     border-radius: 10px !important;
-    color: var(--accent-blue) !important;
+    color: var(--text-primary) !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
-    font-size: 0.82rem !important;
+    font-size: 0.85rem !important;
     padding: 8px 16px !important;
     transition: all 0.2s ease !important;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.05) !important;
 }
 
 .stButton > button:hover {
-    background: rgba(96, 165, 250, 0.15) !important;
-    border-color: rgba(96, 165, 250, 0.4) !important;
+    background: #f8fafc !important;
+    border-color: var(--glass-border-hover) !important;
     transform: translateY(-1px) !important;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.02) !important;
 }
 
 .stButton > button:disabled {
@@ -623,7 +630,7 @@ hr {
 .stDataFrame {
     border-radius: 12px !important;
     overflow: hidden !important;
-    border: 1px solid rgba(255,255,255,0.06) !important;
+    border: 1px solid var(--glass-border) !important;
 }
 
 /* Spinner */
@@ -634,12 +641,15 @@ hr {
 /* Alert boxes */
 .stAlert {
     border-radius: 12px !important;
+    border: 1px solid var(--glass-border) !important;
 }
 
 /* Expander */
 .streamlit-expanderHeader {
-    background: var(--bg-card) !important;
+    background: #f8fafc !important;
     border-radius: 12px !important;
+    border: 1px solid var(--glass-border) !important;
+    color: var(--text-primary) !important;
 }
 
 /* Animate cards on load */
